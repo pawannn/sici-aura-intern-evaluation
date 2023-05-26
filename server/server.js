@@ -1,12 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const Jobs = require('./models/jobs');
 
 require('dotenv').config();
 
 const app = express();
 
 app.use(morgan('dev'));
+app.use(express.urlencoded({extended: true}));
 
 mongoose.connect(process.env.dbURI)
     .then(() => {
@@ -23,23 +25,20 @@ app.listen(PORT, () => {
 });
 
 app.get('/jobs', (_, res) => {
-    const jobs = [
-        {
-            role: "Sales Manager",
-            location: "Delhi",
-            minexp : 5,
-            maxexp: 10,
-        },
-        {
-            role: "Junior Sales Manager",
-            location: "Kolkata",
-            minexp : 3,
-            maxexp: 5,
-        }
-    ]
-    res.json(jobs);
+    Jobs.find().then(data => {
+        res.json(data);
+    });
 });
 
 app.post('/jobs', (req, res) => {
-    
-})
+    const {role, location, minexp, maxexp} = req.body;
+    const job = new Jobs({role, location, minexp, maxexp});
+    job.save()
+    .then(() => {
+        console.log('saved');
+        res.json({message: "saved"});
+    })
+    .catch((err) => {
+        console.log(err);
+    });
+});
