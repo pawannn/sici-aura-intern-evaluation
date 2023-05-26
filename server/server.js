@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 const Jobs = require('./models/jobs');
+const jobs_router = require('./routes/jobs_route');
 
 require('dotenv').config();
 
@@ -24,21 +25,7 @@ app.listen(PORT, () => {
     console.log('listening on port 3000...');
 });
 
-app.get('/jobs', (_, res) => {
-    Jobs.find().then(data => {
-        res.json(data);
-    });
-});
-
-app.post('/jobs', (req, res) => {
-    const {role, location, minexp, maxexp} = req.body;
-    const job = new Jobs({role, location, minexp, maxexp});
-    job.save()
-    .then(() => {
-        console.log('saved');
-        res.json({message: "saved"});
-    })
-    .catch((err) => {
-        console.log(err);
-    });
-});
+app.use('/jobs', jobs_router);
+app.use((_, res) => {
+    res.status(404).json({message: 404});
+})
